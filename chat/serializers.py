@@ -8,6 +8,14 @@ class ThreadCreateSerializer(serializers.ModelSerializer):
         model = Thread
         fields = '__all__'
 
+    def create(self, validated_data):
+        new_participants = validated_data['participants']
+        new_participants = [user.id for user in new_participants]
+        instance = Thread.objects.filter(participants__in=new_participants)
+        if instance:
+            return instance[0]
+        return super().create(validated_data)
+
 
 class ParticipantSerializer(serializers.Serializer):
     username = serializers.CharField()

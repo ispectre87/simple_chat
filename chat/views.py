@@ -1,8 +1,19 @@
 from rest_framework import generics
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from chat.models import Thread, Message
 from chat.serializers import (ThreadCreateSerializer, MessageGetSerializer, MessageCreateSerializer,
                               ThreadGetSerializer, MessageUpdateSerializer)
+from chat.paginators import SimplePaginator
+
+
+class TestView(APIView):
+    permission_classes = (AllowAny, )
+
+    def get(self, request):
+        return Response([{'Status': 'Cool, you launched app'}])
 
 
 class ThreadCreateAPI(generics.CreateAPIView):
@@ -16,14 +27,16 @@ class ThreadDestroyAPI(generics.DestroyAPIView):
 
 class MessageListApi(generics.ListAPIView):
     serializer_class = MessageGetSerializer
+    pagination_class = SimplePaginator
 
     def get_queryset(self):
-        thread_id = self.kwargs.get('thread_id')
+        thread_id = self.kwargs.get('pk')
         return Message.objects.filter(thread_id=thread_id)
 
 
 class UserThreadsListAPI(generics.ListAPIView):
     serializer_class = ThreadGetSerializer
+    pagination_class = SimplePaginator
 
     def get_queryset(self):
         user_id = self.kwargs.get('user_id')
@@ -32,6 +45,7 @@ class UserThreadsListAPI(generics.ListAPIView):
 
 class UserUnreadMessagesApi(generics.ListAPIView):
     serializer_class = MessageGetSerializer
+    pagination_class = SimplePaginator
 
     def get_queryset(self):
         user_id = self.kwargs.get('user_id')
